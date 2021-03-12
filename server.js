@@ -25,7 +25,7 @@ app.get("/", (req, res) => {
 app.get(`/api/exercise/users`, async (request, response, next) => {
   try {
     const users = await User.find({});
-    console.log('users');
+    console.log("users");
     response.status(200).json(users);
   } catch (error) {
     next(error);
@@ -52,15 +52,13 @@ app.post(`/api/exercise/new-user`, async (request, response, next) => {
 
 app.post(`/api/exercise/add`, async (request, response, next) => {
   try {
-    const { userId, description, duration } = request.body;
-    const date = request.body.date ? request.body.date : undefined;
-
     const exercise = {
-      duration,
-      description,
-      date,
+      duration: request.body.duration,
+      description: request.body.description,
+      date: request.body.date ? request.body.date : undefined,
     };
     const dateToPrint = dateFormat(exercise.date, "ddd mmm dd yyyy");
+
     User.findById(userId).then((user) => {
       user.log.push(exercise);
       user.save();
