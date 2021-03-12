@@ -30,9 +30,9 @@ app.get(`/api/exercise/users`, async (request, response, next) => {
   }
 });
 
-app.get(`/api/exercise/log/:userId`, async (request, response, next) => {
+app.get(`/api/exercise/log/`, async (request, response, next) => {
   try {
-    const userId = request.params.userId;
+    const userId=request.query.userId;
     const user = await User.findById(userId);
     let savedAndFormattedUser = user.toJSON();
     response.json(savedAndFormattedUser);
