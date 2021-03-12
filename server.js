@@ -35,6 +35,7 @@ app.get(`/api/exercise/log/`, async (request, response, next) => {
     const userId=request.query.userId;
     const user = await User.findById(userId);
     let savedAndFormattedUser = user.toJSON();
+    savedAndFormattedUser.count=savedAndFormattedUser.log.length;
     response.json(savedAndFormattedUser);
   } catch (error) {
     next(error);
