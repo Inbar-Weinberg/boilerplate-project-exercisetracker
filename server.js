@@ -24,7 +24,6 @@ app.get("/", (req, res) => {
 app.get(`/api/exercise/users`, async (request, response, next) => {
   try {
     const users = await User.find({});
-    console.log("users");
     response.status(200).json(users);
   } catch (error) {
     next(error);
@@ -34,9 +33,7 @@ app.get(`/api/exercise/users`, async (request, response, next) => {
 app.get(`/api/exercise/log`, async (request, response, next) => {
   try {
     const { userId } = request.body;
-    console.log(userId);
     const user = await User.findById(userId);
-    console.log(user);
     response.json(user);
   } catch (error) {
     next(error);
