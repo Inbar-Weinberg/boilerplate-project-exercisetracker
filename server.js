@@ -70,7 +70,7 @@ app.post(`/api/exercise/add`, async (request, response, next) => {
       .then((savedUser) => {
         response
           .status(200)
-          .json({ userId, description, duration, date: dateToPrint });
+          .json({ username: user.username, _id:userId, description, duration, date: dateToPrint });
       });
   } catch (error) {
     next(error);
