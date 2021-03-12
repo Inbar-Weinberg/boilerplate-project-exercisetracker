@@ -1,40 +1,77 @@
+require("dotenv").config();
+
 const express = require("express");
 const app = express();
 const cors = require("cors");
-require("dotenv").config();
+
 const User = require("./models/user");
+const Exercise = require("./models/exercise");
+const Connection = require("./models");
 
 app.use(cors());
 app.use(express.static("public"));
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/views/index.html");
-});
-
 app.use(
   express.urlencoded({
     extended: true,
   })
 );
 
-app.post(`/api/exercise/new-user`, (request, response, next) => {
-  let username = request.body.username;
-  const user = new User({ username: username });
- /*
-  user
-    .save()
-    .then((savedUser) => savedUser.toJSON())
-    .then((savedAndFormattedUser) => response.json(savedAndFormattedUser))
-    .catch((error) => next(error));
-    */
-    user.save((err, data) => {
-      console.log(data);
-      return response.status(201).json({username: data.username, _id: data._id});
+//--
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/views/index.html");
+});
+
+app.get(`/api/exercise/users`, async (request, response, next) => {
+  try {
+    users = await User.find({});
+    response.status(200).json(users);
+  } catch (error) {
+    next(error);
+  }
+});
+//--
+
+app.post(`/api/exercise/new-user`, async (request, response, next) => {
+  try {
+    let username = request.body.username;
+    const user = new User({ username: username });
+    let savedUser = await user.save();
+    let savedAndFormattedUser = savedUser.toJSON();
+    response.json(savedAndFormattedUser);
+  } catch (error) {
+    next(error);
+  }
+  /*  user.save((err, data) => {
+    console.log(data);
+    return response
+      .status(201)
+      .json({ username: data.username, _id: data._id });*/
+});
+
+app.post(`/api/exercise/add`, async (request, response, next) => {
+  try {
+    const { userId, description, duration, date } = request.body;
+
+    const exercise = await new Exercise({
+      duration,
+      description,
+      date,
+    }).save();
+
+    User.findById(userId).then((user) => {
+      user.log.push(exercise);
+      console.log(user);
+      response
+        .status(200)
+        .json({ userId, description, duration, date: exercise.date });
     });
+  } catch (error) {
+    next(error);
+  }
 });
 
 //-- error handler
 const errorHandler = (error, request, response, next) => {
-  console;
   console.error(error.message);
 
   if (error.name === "CastError") {
