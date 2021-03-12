@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const dateFormat = require("dateformat");
 
 const User = require("./models/user");
 const Exercise = require("./models/exercise");
@@ -23,7 +24,8 @@ app.get("/", (req, res) => {
 
 app.get(`/api/exercise/users`, async (request, response, next) => {
   try {
-    users = await User.find({});
+    const users = await User.find({});
+    console.log('users');
     response.status(200).json(users);
   } catch (error) {
     next(error);
@@ -50,26 +52,27 @@ app.post(`/api/exercise/new-user`, async (request, response, next) => {
 
 app.post(`/api/exercise/add`, async (request, response, next) => {
   try {
-    const { userId, description, duration, date } = request.body;
+    const { userId, description, duration } = request.body;
+    const date = request.body.date ? request.body.date : undefined;
 
-    const exercise = await new Exercise({
+    const exercise = {
       duration,
       description,
       date,
-    }).save();
-
+    };
+    const dateToPrint = dateFormat(exercise.date, "ddd mmm dd yyyy");
     User.findById(userId).then((user) => {
       user.log.push(exercise);
-      console.log(user);
+      user.save();
       response
         .status(200)
-        .json({ userId, description, duration, date: exercise.date });
+        .json({ userId, description, duration, date: dateToPrint });
     });
   } catch (error) {
     next(error);
   }
 });
-
+//Mon Jan 01 1990
 //-- error handler
 const errorHandler = (error, request, response, next) => {
   console.error(error.message);
