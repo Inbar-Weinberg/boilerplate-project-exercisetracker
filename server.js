@@ -31,6 +31,8 @@ app.get(`/api/exercise/users`, async (request, response, next) => {
     next(error);
   }
 });
+
+app.get(`/api/exercise/log`)
 //--
 
 app.post(`/api/exercise/new-user`, async (request, response, next) => {
@@ -43,34 +45,35 @@ app.post(`/api/exercise/new-user`, async (request, response, next) => {
   } catch (error) {
     next(error);
   }
-  /*  user.save((err, data) => {
-    console.log(data);
-    return response
-      .status(201)
-      .json({ username: data.username, _id: data._id });*/
 });
 
 app.post(`/api/exercise/add`, async (request, response, next) => {
   try {
-    const exercise = {
-      duration: request.body.duration,
-      description: request.body.description,
-      date: request.body.date ? request.body.date : undefined,
-    };
+    const { userId, duration, description } = request.body;
+    const date = request.body.date ? request.body.date : undefined;
+
+    const exercise = { duration, description, date };
+
     const dateToPrint = dateFormat(exercise.date, "ddd mmm dd yyyy");
 
-    User.findById(userId).then((user) => {
-      user.log.push(exercise);
-      user.save();
-      response
-        .status(200)
-        .json({ userId, description, duration, date: dateToPrint });
-    });
+    User.findById(userId)
+      .then((user) => {
+        user.log.push(exercise);
+        user.save();
+      })
+      .then((savedUser) => {
+        response
+          .status(200)
+          .json({ userId, description, duration, date: dateToPrint });
+      });
   } catch (error) {
     next(error);
   }
 });
-//Mon Jan 01 1990
+
+
+
+
 //-- error handler
 const errorHandler = (error, request, response, next) => {
   console.error(error.message);
