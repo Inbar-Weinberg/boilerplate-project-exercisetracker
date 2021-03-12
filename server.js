@@ -6,7 +6,6 @@ const cors = require("cors");
 const dateFormat = require("dateformat");
 
 const User = require("./models/user");
-const Exercise = require("./models/exercise");
 const Connection = require("./models");
 
 app.use(cors());
@@ -32,7 +31,17 @@ app.get(`/api/exercise/users`, async (request, response, next) => {
   }
 });
 
-app.get(`/api/exercise/log`)
+app.get(`/api/exercise/log`, async (request, response, next) => {
+  try {
+    const { userId } = request.body;
+    console.log(userId);
+    const user = await User.findById(userId);
+    console.log(user);
+    response.json(user);
+  } catch (error) {
+    next(error);
+  }
+});
 //--
 
 app.post(`/api/exercise/new-user`, async (request, response, next) => {
@@ -70,9 +79,6 @@ app.post(`/api/exercise/add`, async (request, response, next) => {
     next(error);
   }
 });
-
-
-
 
 //-- error handler
 const errorHandler = (error, request, response, next) => {
