@@ -34,7 +34,8 @@ app.get(`/api/exercise/log/:userId`, async (request, response, next) => {
   try {
     const userId = request.params.userId;
     const user = await User.findById(userId);
-    response.json(user);
+    let savedAndFormattedUser = user.toJSON();
+    response.json(savedAndFormattedUser);
   } catch (error) {
     next(error);
   }
@@ -60,13 +61,9 @@ app.post(`/api/exercise/add`, async (request, response, next) => {
     let date = request.body.date ? request.body.date : new Date();
     date = dateFormat(date, "ddd mmm dd yyyy");
     const exercise = { duration, description, date };
+    console.log(exercise);
 
-    User.findById(userId)
-      .then((user) => {
-        user.log.push(exercise);
-        user.save();
-        return user;
-      })
+    User.findByIdAndUpdate(userId, { $push: { log: exercise } }, { new: true })
       .then((user) => {
         response.status(200).json({
           username: user.username,
@@ -79,6 +76,13 @@ app.post(`/api/exercise/add`, async (request, response, next) => {
   } catch (error) {
     next(error);
   }
+  /*
+        .then((user) => {
+        user.log.push(exercise);
+        user.save();
+        return user;
+      })
+  */
 });
 
 //-- error handler
