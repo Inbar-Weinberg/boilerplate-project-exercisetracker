@@ -56,29 +56,25 @@ app.post(`/api/exercise/new-user`, async (request, response, next) => {
 app.post(`/api/exercise/add`, async (request, response, next) => {
   try {
     const { userId, description } = request.body;
-    const date = request.body.date ? request.body.date : undefined;
     const duration = Number(request.body.duration);
+    let date = request.body.date ? request.body.date : new Date();
+    date = dateFormat(date, "ddd mmm dd yyyy");
     const exercise = { duration, description, date };
-
-    const dateToPrint = dateFormat(exercise.date, "ddd mmm dd yyyy");
 
     User.findById(userId)
       .then((user) => {
-        console.log(user);
         user.log.push(exercise);
         user.save();
-        return user
+        return user;
       })
       .then((user) => {
-        response
-          .status(200)
-          .json({
-            username: user.username,
-            _id: userId,
-            description,
-            duration,
-            date: dateToPrint,
-          });
+        response.status(200).json({
+          username: user.username,
+          _id: userId,
+          description,
+          duration,
+          date,
+        });
       });
   } catch (error) {
     next(error);

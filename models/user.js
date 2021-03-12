@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
     {
       description: String,
       duration: Number,
-      date: Date,
+      date: String,
     },
   ],
 });
