@@ -32,15 +32,35 @@ app.get(`/api/exercise/users`, async (request, response, next) => {
 
 app.get(`/api/exercise/log/`, async (request, response, next) => {
   try {
-    const userId=request.query.userId;
-    const user = await User.findById(userId);
-    let savedAndFormattedUser = user.toJSON();
-    savedAndFormattedUser.count=savedAndFormattedUser.log.length;
-    response.json(savedAndFormattedUser);
+    const userId = request.query.userId;
+    const user = await User.findById(userId).exec();
+
+    const fromDate = request.query.from ? queryToDate(from) : new Date(0);
+    const toDate = request.query.from ? queryToDate(to) : new Date();
+    let printLog = user.log.filter((date) => date > fromDate && date < toDate);
+    const limit = request.query.limit ? request.query.limit : printLog.length;
+    printLog.splice(limit);
+    let returnedUser = {
+       _id: user._id,
+       username: user.username,
+       log: printLog,
+       count: printLog.length,
+    };
+    response.json(returnedUser);
   } catch (error) {
     next(error);
   }
 });
+
+function queryToDate(query) {
+  let year = parseInt(query.substring(0, 4));
+  let month = parseInt(query.substring(5, 7));
+  let day = parseInt(query.substring(8));
+
+  let date = new Date(year, month - 1, day + 1);
+  return date;
+}
+
 //--
 
 app.post(`/api/exercise/new-user`, async (request, response, next) => {
@@ -60,20 +80,22 @@ app.post(`/api/exercise/add`, async (request, response, next) => {
     const { userId, description } = request.body;
     const duration = Number(request.body.duration);
     let date = request.body.date ? request.body.date : new Date();
-    date = dateFormat(date, "ddd mmm dd yyyy");
     const exercise = { duration, description, date };
     console.log(exercise);
 
-    User.findByIdAndUpdate(userId, { $push: { log: exercise } }, { new: true })
-      .then((user) => {
-        response.status(200).json({
-          username: user.username,
-          _id: userId,
-          description,
-          duration,
-          date,
-        });
+    User.findByIdAndUpdate(
+      userId,
+      { $push: { log: exercise } },
+      { new: true }
+    ).then((user) => {
+      response.status(200).json({
+        username: user.username,
+        _id: userId,
+        description,
+        duration,
+        date: dateFormat(date, "ddd mmm dd yyyy"),
       });
+    });
   } catch (error) {
     next(error);
   }
