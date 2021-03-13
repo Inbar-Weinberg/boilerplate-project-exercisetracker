@@ -26,9 +26,10 @@ app.get(`/api/exercise/users`, async (request, response, next) => {
     let users = await User.find({}).exec();
     users.forEach((user) =>
       user.log.forEach(
-        (exercise) =>
-          (exercise.date = dateFormat(exercise.date, "ddd mmm dd yyyy"))
-      )
+        (exercise) =>{
+          exercise = JSON.parse(JSON.stringify(exercise));
+          exercise.date = dateFormat(exercise.date, "ddd mmm dd yyyy");
+      })
     );
 
     response.status(200).json(users);
@@ -41,7 +42,6 @@ app.get(`/api/exercise/log/`, async (request, response, next) => {
   try {
     const userId = request.query.userId;
     const user = await User.findById(userId).exec();
-    console.log("user.log:", user.log[0].date);
 
     const fromDate = request.query.from
       ? queryToDate(request.query.from)
@@ -56,7 +56,7 @@ app.get(`/api/exercise/log/`, async (request, response, next) => {
 
     const limit = request.query.limit
       ? request.query.limit
-      : readyToPrintLog.length;
+      : filteredLog.length;
     filteredLog.splice(limit);
 
     filteredLog.forEach((exercise) => {
