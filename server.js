@@ -40,6 +40,7 @@ app.get(`/api/exercise/log/`, async (request, response, next) => {
     let printLog = user.log.filter((date) => date > fromDate && date < toDate);
     const limit = request.query.limit ? request.query.limit : printLog.length;
     printLog.splice(limit);
+    printLog.forEach(exercise=>exercise.date=dateFormat(date, "ddd mmm dd yyyy"))
     let returnedUser = {
        _id: user._id,
        username: user.username,
