@@ -81,7 +81,7 @@ function queryToDate(query) {
   let month = parseInt(query.substring(5, 7));
   let day = parseInt(query.substring(8));
 
-  let date = new Date(year, month - 1, day + 1);
+  let date = new Date(year, month - 1, day);
   return date;
 }
 
