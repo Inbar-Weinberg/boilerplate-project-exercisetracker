@@ -23,7 +23,14 @@ app.get("/", (req, res) => {
 
 app.get(`/api/exercise/users`, async (request, response, next) => {
   try {
-    const users = await User.find({});
+    let users = await User.find({}).exec();
+    users.forEach((user) =>
+      user.log.forEach(
+        (exercise) =>
+          (exercise.date = dateFormat(exercise.date, "ddd mmm dd yyyy"))
+      )
+    );
+
     response.status(200).json(users);
   } catch (error) {
     next(error);
@@ -34,22 +41,26 @@ app.get(`/api/exercise/log/`, async (request, response, next) => {
   try {
     const userId = request.query.userId;
     const user = await User.findById(userId).exec();
-console.log(user);
-    const fromDate = request.query.from ? queryToDate(request.query.from) : new Date(0);
-    console.log({fromDate});
-    const toDate = request.query.to ? queryToDate(request.query.to) : new Date();
-    console.log({toDate});
-    let printLog = user.log.filter((date) => date > fromDate && date < toDate);
-    const limit = request.query.limit ? request.query.limit : printLog.length;
-    console.log({limit});
 
-    printLog.splice(limit);
-    printLog.forEach(exercise=>exercise.date=dateFormat(date, "ddd mmm dd yyyy"))
+    const fromDate = request.query.from
+      ? queryToDate(request.query.from)
+      : new Date(0);
+    const toDate = request.query.to
+      ? queryToDate(request.query.to)
+      : new Date();
+
+    let readyToPrintLog = user.log.filter((exercise) => exercise.date >= fromDate && exercise.date <= toDate);
+    const limit = request.query.limit ? request.query.limit : readyToPrintLog.length;
+
+    readyToPrintLog.splice(limit);
+    readyToPrintLog.forEach(
+      (exercise) => (exercise.date = dateFormat(exercise.date, "ddd mmm dd yyyy"))
+    );
     let returnedUser = {
-       _id: user._id,
-       username: user.username,
-       log: printLog,
-       count: printLog.length,
+      _id: user._id,
+      username: user.username,
+      log: readyToPrintLog,
+      count: readyToPrintLog.length,
     };
     response.json(returnedUser);
   } catch (error) {
@@ -104,13 +115,6 @@ app.post(`/api/exercise/add`, async (request, response, next) => {
   } catch (error) {
     next(error);
   }
-  /*
-        .then((user) => {
-        user.log.push(exercise);
-        user.save();
-        return user;
-      })
-  */
 });
 
 //-- error handler
