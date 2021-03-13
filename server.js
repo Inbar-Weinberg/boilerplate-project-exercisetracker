@@ -25,10 +25,9 @@ app.get(`/api/exercise/users`, async (request, response, next) => {
   try {
     let users = await User.find({}).exec();
     users.forEach((user) =>
-      user.log.forEach(
-        (exercise) =>{
-          exercise = JSON.parse(JSON.stringify(exercise));
-          exercise.date = dateFormat(exercise.date, "ddd mmm dd yyyy");
+      user.log.forEach((exercise) => {
+        exercise = JSON.parse(JSON.stringify(exercise));
+        exercise.date = dateFormat(exercise.date, "ddd mmm dd yyyy");
       })
     );
 
@@ -61,7 +60,7 @@ app.get(`/api/exercise/log/`, async (request, response, next) => {
 
     filteredLog.forEach((exercise) => {
       exercise = JSON.parse(JSON.stringify(exercise));
-      exercise.date = dateFormat(exercise.date, "ddd mmm dd yyyy")
+      exercise.date = dateFormat(exercise.date, "ddd mmm dd yyyy");
     });
 
     let returnedUser = {
@@ -75,15 +74,6 @@ app.get(`/api/exercise/log/`, async (request, response, next) => {
     next(error);
   }
 });
-
-function queryToDate(query) {
-  let year = parseInt(query.substring(0, 4));
-  let month = parseInt(query.substring(5, 7));
-  let day = parseInt(query.substring(8));
-
-  let date = new Date(year, month - 1, day);
-  return date;
-}
 
 //--
 
@@ -142,3 +132,12 @@ app.use(errorHandler);
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log("Your app is listening on port " + listener.address().port);
 });
+
+function queryToDate(query) {
+  let year = parseInt(query.substring(0, 4));
+  let month = parseInt(query.substring(5, 7));
+  let day = parseInt(query.substring(8));
+
+  let date = new Date(year, month - 1, day);
+  return date;
+}
