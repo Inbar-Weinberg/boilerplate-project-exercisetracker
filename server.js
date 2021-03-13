@@ -41,6 +41,7 @@ app.get(`/api/exercise/log/`, async (request, response, next) => {
   try {
     const userId = request.query.userId;
     const user = await User.findById(userId).exec();
+    console.log("user.log:", user.log[0].date);
 
     const fromDate = request.query.from
       ? queryToDate(request.query.from)
@@ -49,18 +50,25 @@ app.get(`/api/exercise/log/`, async (request, response, next) => {
       ? queryToDate(request.query.to)
       : new Date();
 
-    let readyToPrintLog = user.log.filter((exercise) => exercise.date >= fromDate && exercise.date <= toDate);
-    const limit = request.query.limit ? request.query.limit : readyToPrintLog.length;
-
-    readyToPrintLog.splice(limit);
-    readyToPrintLog.forEach(
-      (exercise) => (exercise.date = dateFormat(exercise.date, "ddd mmm dd yyyy"))
+    let filteredLog = user.log.filter(
+      (exercise) => exercise.date >= fromDate && exercise.date <= toDate
     );
+
+    const limit = request.query.limit
+      ? request.query.limit
+      : readyToPrintLog.length;
+    filteredLog.splice(limit);
+
+    filteredLog.forEach((exercise) => {
+      exercise = JSON.parse(JSON.stringify(exercise));
+      exercise.date = dateFormat(exercise.date, "ddd mmm dd yyyy")
+    });
+
     let returnedUser = {
       _id: user._id,
       username: user.username,
-      log: readyToPrintLog,
-      count: readyToPrintLog.length,
+      log: filteredLog,
+      count: limit,
     };
     response.json(returnedUser);
   } catch (error) {
@@ -97,7 +105,6 @@ app.post(`/api/exercise/add`, async (request, response, next) => {
     const duration = Number(request.body.duration);
     let date = request.body.date ? request.body.date : new Date();
     const exercise = { duration, description, date };
-    console.log(exercise);
 
     User.findByIdAndUpdate(
       userId,
