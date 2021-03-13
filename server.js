@@ -34,11 +34,15 @@ app.get(`/api/exercise/log/`, async (request, response, next) => {
   try {
     const userId = request.query.userId;
     const user = await User.findById(userId).exec();
-
-    const fromDate = request.query.from ? queryToDate(from) : new Date(0);
-    const toDate = request.query.from ? queryToDate(to) : new Date();
+console.log(user);
+    const fromDate = request.query.from ? queryToDate(request.query.from) : new Date(0);
+    console.log({fromDate});
+    const toDate = request.query.to ? queryToDate(request.query.to) : new Date();
+    console.log({toDate});
     let printLog = user.log.filter((date) => date > fromDate && date < toDate);
     const limit = request.query.limit ? request.query.limit : printLog.length;
+    console.log({limit});
+
     printLog.splice(limit);
     printLog.forEach(exercise=>exercise.date=dateFormat(date, "ddd mmm dd yyyy"))
     let returnedUser = {
